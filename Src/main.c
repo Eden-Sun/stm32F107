@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V1.2.0
   * @date    31-July-2015
-  * @brief   This sample code implements a TCP Echo Server application based on 
+  * @brief   This sVFCVample code implements a TCP Echo Server application based on 
   *          Raw API of LwIP stack. This application uses STM32F1xx the 
   *          ETH HAL API to transmit and receive data. 
   *          The communication is done with a web browser of a remote PC.
@@ -39,12 +39,13 @@
 #include "app_ethernet.h"
 #include "tcp_echoserver.h"
 
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 struct netif gnetif;
-
+USBD_HandleTypeDef USBD_Device;
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void BSP_Config(void);
@@ -69,7 +70,18 @@ int main(void)
   
   /* Configure the system clock to 168 Mhz */
   SystemClock_Config();
+	
+	USBD_Init(&USBD_Device, &MSC_Desc, 0);
   
+  /* Add Supported Class */
+  USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
+  
+  /* Add Storage callbacks for MSC Class */
+	USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
+  
+  /* Start Device Process */
+  USBD_Start(&USBD_Device);
+
   /* Configure the BSP */
   BSP_Config();
     
@@ -124,7 +136,9 @@ static void Netif_Config(void)
   IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1 , NETMASK_ADDR2, NETMASK_ADDR3);
   IP4_ADDR(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
   
-  /* Add the network interface */    
+  /* Add the network interface 
+    the ethernetif_init pointer can initial the eth hw setting 
+  */ 
   netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &ethernet_input);
   
   /* Registers the default network interface */
@@ -166,7 +180,7 @@ void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef clkinitstruct = {0};
   RCC_OscInitTypeDef oscinitstruct = {0};
-  
+  RCC_PeriphCLKInitTypeDef rccperiphclkinit = {0};
   /* Configure PLLs ------------------------------------------------------*/
   /* PLL2 configuration: PLL2CLK = (HSE / HSEPrediv2Value) * PLL2MUL = (25 / 5) * 8 = 40 MHz */
   /* PREDIV1 configuration: PREDIV1CLK = PLL2CLK / HSEPredivValue = 40 / 5 = 8 MHz */
@@ -184,6 +198,11 @@ void SystemClock_Config(void)
   oscinitstruct.PLL2.PLL2MUL    = RCC_PLL2_MUL8;
   HAL_RCC_OscConfig(&oscinitstruct);
   
+	/* USB clock selection */
+  rccperiphclkinit.PeriphClockSelection = RCC_PERIPHCLK_USB;
+  rccperiphclkinit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV3;
+  HAL_RCCEx_PeriphCLKConfig(&rccperiphclkinit);
+	
   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
   clocks dividers */
   clkinitstruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);

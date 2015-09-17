@@ -126,7 +126,7 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
   - ETH_MII_RX_ER: PB10 */
  
   /* Enable the remapping of Ethernet MAC connections with the PHY. */
-  __HAL_AFIO_REMAP_ETH_ENABLE();
+  //__HAL_AFIO_REMAP_ETH_ENABLE();
   
   /* Configure PA0, PA1, and PA3 */
   GPIO_InitStructure.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_3;

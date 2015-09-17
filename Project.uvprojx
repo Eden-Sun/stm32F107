@@ -88,7 +88,7 @@
             <nStopA1X>0</nStopA1X>
             <nStopA2X>0</nStopA2X>
           </AfterMake>
-          <SelectedForBatchBuild>0</SelectedForBatchBuild>
+          <SelectedForBatchBuild>1</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
         </TargetCommonOption>
         <CommonProperty>
@@ -373,7 +373,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F107xC,USE_STM3210C_EVAL,</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Inc;.\Drivers\CMSIS\Device\ST\STM32F1xx\Include;.\Drivers\CMSIS\Include;.\Drivers\STM32F1xx_HAL_Driver\Inc;.\Drivers\BSP\STM3210C_EVAL;.\Drivers\BSP\Components;.\Middlewares\Third_Party\LwIP\src\include\;.\Middlewares\Third_Party\LwIP\src\include\ipv4;.\Middlewares\Third_Party\LwIP\system;.\Utilities</IncludePath>
+              <IncludePath>.\Inc;.\Drivers\CMSIS\Device\ST\STM32F1xx\Include;.\Drivers\CMSIS\Include;.\Drivers\STM32F1xx_HAL_Driver\Inc;.\Drivers\BSP\STM3210C_EVAL;.\Drivers\BSP\Components;.\Middlewares\Third_Party\LwIP\src\include\;.\Middlewares\Third_Party\LwIP\src\include\ipv4;.\Middlewares\Third_Party\LwIP\system;.\Utilities;.\Middlewares\ST\STM32_USB_Device_Library\Class\MSC\Inc;.\Middlewares\ST\STM32_USB_Device_Library\Core\Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -447,14 +447,24 @@
               <FilePath>.\Src\stm32f1xx_it.c</FilePath>
             </File>
             <File>
-              <FileName>system_stm32f1xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Src\system_stm32f1xx.c</FilePath>
-            </File>
-            <File>
               <FileName>tcp_echoserver.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Src\tcp_echoserver.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_conf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\usbd_conf.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_desc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\usbd_desc.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_storage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\usbd_storage.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -475,6 +485,11 @@
               <FileName>stm3210c_eval.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Drivers\BSP\STM3210C_EVAL\stm3210c_eval.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm3210c_eval_sd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Drivers\BSP\STM3210C_EVAL\stm3210c_eval_sd.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -895,6 +910,51 @@
               <FileName>etharp.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Middlewares\Third_Party\LwIP\src\netif\etharp.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Middlewares/STM32/Class/MSC</GroupName>
+          <Files>
+            <File>
+              <FileName>usbd_msc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\ST\STM32_USB_Device_Library\Class\MSC\Src\usbd_msc.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_msc_bot.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\ST\STM32_USB_Device_Library\Class\MSC\Src\usbd_msc_bot.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_msc_data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\ST\STM32_USB_Device_Library\Class\MSC\Src\usbd_msc_data.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_msc_scsi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\ST\STM32_USB_Device_Library\Class\MSC\Src\usbd_msc_scsi.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Middlewares/STM32/Core</GroupName>
+          <Files>
+            <File>
+              <FileName>usbd_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_ctlreq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_ctlreq.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_ioreq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_ioreq.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    LwIP/LwIP_TCP_Echo_Server/Inc/main.h 
+  * @file    USB_Device/MSC_Standalone/Inc/usbd_conf.h
   * @author  MCD Application Team
   * @version V1.2.0
   * @date    31-July-2015
-  * @brief   Header for main.c module
+  * @brief   General low level driver configuration
   ******************************************************************************
   * @attention
   *
@@ -26,58 +26,61 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
-
-#ifdef __cplusplus
- extern "C" {
-#endif
+#ifndef __USBD_CONF_H
+#define __USBD_CONF_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
-#include "stm3210c_eval.h"
-#include "stm3210c_eval_sd.h"
-#include "usbd_core.h"
-#include "usbd_desc.h"
-#include "usbd_msc.h"
-#include "usbd_storage.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
+/* Common Config */
+#define USBD_MAX_NUM_INTERFACES               1
+#define USBD_MAX_NUM_CONFIGURATION            1
+#define USBD_MAX_STR_DESC_SIZ                 0x100
+#define USBD_SUPPORT_USER_STRING              0 
+#define USBD_SELF_POWERED                     1
+#define USBD_DEBUG_LEVEL                      0
 
-#define DEST_IP_ADDR0   192
-#define DEST_IP_ADDR1   168
-#define DEST_IP_ADDR2   0
-#define DEST_IP_ADDR3   1
-
-#define DEST_PORT       7
- 
-/*Static IP ADDRESS: IP_ADDR0.IP_ADDR1.IP_ADDR2.IP_ADDR3 */
-#define IP_ADDR0   192
-#define IP_ADDR1   168
-#define IP_ADDR2   0
-#define IP_ADDR3   10
-   
-/*NETMASK*/
-#define NETMASK_ADDR0   255
-#define NETMASK_ADDR1   255
-#define NETMASK_ADDR2   255
-#define NETMASK_ADDR3   0
-
-/*Gateway Address*/
-#define GW_ADDR0   192
-#define GW_ADDR1   168
-#define GW_ADDR2   0
-#define GW_ADDR3   1
+/* MSC Class Config */
+#define MSC_MEDIA_PACKET                      512
 
 /* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
+/* Memory management macros */
+#define USBD_malloc               malloc
+#define USBD_free                 free
+#define USBD_memset               memset
+#define USBD_memcpy               memcpy
 
-#ifdef __cplusplus
-}
+/* DEBUG macros */
+#if (USBD_DEBUG_LEVEL > 0)
+#define  USBD_UsrLog(...)   printf(__VA_ARGS__);\
+                            printf("\n");
+#else
+#define USBD_UsrLog(...)   
 #endif
 
-#endif /* __MAIN_H */
+#if (USBD_DEBUG_LEVEL > 1)
+#define  USBD_ErrLog(...)   printf("ERROR: ") ;\
+                            printf(__VA_ARGS__);\
+                            printf("\n");
+#else
+#define USBD_ErrLog(...)   
+#endif 
 
+#if (USBD_DEBUG_LEVEL > 2)                         
+#define  USBD_DbgLog(...)   printf("DEBUG : ") ;\
+                            printf(__VA_ARGS__);\
+                            printf("\n");
+#else
+#define USBD_DbgLog(...)
+#endif
+
+/* Exported functions ------------------------------------------------------- */
+
+#endif /* __USBD_CONF_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
