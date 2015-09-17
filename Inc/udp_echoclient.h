@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    LwIP/LwIP_TCP_Echo_Server/Inc/main.h 
+  * @file    LwIP/LwIP_UDP_Echo_Client/Inc/udp_echoclient.h
   * @author  MCD Application Team
   * @version V1.2.0
   * @date    31-July-2015
-  * @brief   Header for main.c module
+  * @brief   Header file for udp_echoclient.c
   ******************************************************************************
   * @attention
   *
@@ -25,59 +25,19 @@
   ******************************************************************************
   */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
-
-#ifdef __cplusplus
- extern "C" {
-#endif
+/* Define to prevent recursive inclusion -------------------------------------*/  
+#ifndef __UDP_ECHOCLIENT_H__
+#define __UDP_ECHOCLIENT_H__
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_hal.h"
-#include "stm3210c_eval.h"
-#include "stm3210c_eval_sd.h"
-#include "usbd_core.h"
-#include "usbd_desc.h"
-#include "usbd_msc.h"
-#include "usbd_storage.h"
-
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-
-#define DEST_IP_ADDR0   192
-#define DEST_IP_ADDR1   168
-#define DEST_IP_ADDR2   0
-#define DEST_IP_ADDR3   11
-
-#define DEST_PORT       7
-#define UDP_SERVER_PORT 7000
-/*Static IP ADDRESS: IP_ADDR0.IP_ADDR1.IP_ADDR2.IP_ADDR3 */
-#define IP_ADDR0   192
-#define IP_ADDR1   168
-#define IP_ADDR2   0
-#define IP_ADDR3   10
-   
-/*NETMASK*/
-#define NETMASK_ADDR0   255
-#define NETMASK_ADDR1   255
-#define NETMASK_ADDR2   255
-#define NETMASK_ADDR3   0
-
-/*Gateway Address*/
-#define GW_ADDR0   192
-#define GW_ADDR1   168
-#define GW_ADDR2   0
-#define GW_ADDR3   1
-
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
+void udp_echoclient_connect(void);
+void udp_echoclient_send(void);
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* __MAIN_H */
+#endif /* __UDP_ECHOCLIENT_H__ */
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

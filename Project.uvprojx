@@ -466,6 +466,11 @@
               <FileType>1</FileType>
               <FilePath>.\Src\usbd_storage.c</FilePath>
             </File>
+            <File>
+              <FileName>udp_echoclient.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\udp_echoclient.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

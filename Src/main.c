@@ -1,34 +1,4 @@
-/**
-  ******************************************************************************
-  * @file    LwIP/LwIP_TCP_Echo_Server/Src/main.c 
-  * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    31-July-2015
-  * @brief   This sVFCVample code implements a TCP Echo Server application based on 
-  *          Raw API of LwIP stack. This application uses STM32F1xx the 
-  *          ETH HAL API to transmit and receive data. 
-  *          The communication is done with a web browser of a remote PC.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
-  *
-  * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
-  * You may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at:
-  *
-  *        http://www.st.com/software_license_agreement_liberty_v2
-  *
-  * Unless required by applicable law or agreed to in writing, software 
-  * distributed under the License is distributed on an "AS IS" BASIS, 
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  *
-  ******************************************************************************
-  */
 
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "lwip/opt.h"
 #include "lwip/init.h"
@@ -40,10 +10,6 @@
 #include "tcp_echoserver.h"
 
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 struct netif gnetif;
 USBD_HandleTypeDef USBD_Device;
 /* Private function prototypes -----------------------------------------------*/
@@ -51,69 +17,55 @@ static void SystemClock_Config(void);
 static void BSP_Config(void);
 static void Netif_Config(void);
 
-/* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  Main program
-  * @param  None
-  * @retval None
-  */
+#define USBMODE 1
+#define ETHMODE 0
+int mode = USBMODE;
+mode = ETHMODE;
 int main(void)
 {
-  /* STM32F1xx HAL library initialization:
-       - Configure the Flash prefetch, instruction and Data caches
-       - Configure the Systick to generate an interrupt each 1 msec
-       - Set NVIC Group Priority to 4
-       - Global MSP (MCU Support Package) initialization
-     */
-  HAL_Init();  
+ 
+	HAL_Init();  
   
   /* Configure the system clock to 168 Mhz */
   SystemClock_Config();
+	if(mode){
 	
-	USBD_Init(&USBD_Device, &MSC_Desc, 0);
-  
-  /* Add Supported Class */
-  USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
-  
-  /* Add Storage callbacks for MSC Class */
-	USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
-  
-  /* Start Device Process */
-  USBD_Start(&USBD_Device);
+		USBD_Init(&USBD_Device, &MSC_Desc, 0);
+		USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
+		USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
+		USBD_Start(&USBD_Device);
+	}else {
 
   /* Configure the BSP */
-  BSP_Config();
-    
-  /* Initilaize the LwIP stack */
-  lwip_init();
-  
-  /* Configure the Network interface */
-  Netif_Config();  
-  
-  /* tcp echo server Init */
-  tcp_echoserver_init();
-  
-  /* Notify user about the netwoek interface config */
-  User_notification(&gnetif);
+		BSP_Config();
+			
+		/* Initilaize the LwIP stack */
+		lwip_init();
+		
+		/* Configure the Network interface */
+		Netif_Config();  
+		
+		/* tcp echo server Init */
+		tcp_echoserver_init();
+		udp_echoclient_connect();
+		/* Notify user about the netwoek interface config */
+		User_notification(&gnetif);
+	}
 
   /* Infinite loop */
   while (1)
   {  
-    /* Read a received packet from the Ethernet buffers and send it 
+    udp_testsend("123 ");
+		/* Read a received packet from the Ethernet buffers and send it 
        to the lwIP for handling */
-    ethernetif_input(&gnetif);
-
-    /* Handle timeouts */
-    sys_check_timeouts();
+    if(mode==ETHMODE){
+			ethernetif_input(&gnetif);
+			/* Handle timeouts */
+			sys_check_timeouts();
+		}
   }
 }
 
-/**
-  * @brief  Configurates the BSP.
-  * @param  None
-  * @retval None
-  */
 static void BSP_Config(void)
 {
   /* Initialize STM3210C-EVAL's LEDs */
@@ -121,11 +73,7 @@ static void BSP_Config(void)
   BSP_LED_Init(LED2);
 }
 
-/**
-  * @brief  Configurates the network interface
-  * @param  None
-  * @retval None
-  */
+
 static void Netif_Config(void)
 {
   struct ip_addr ipaddr;
@@ -159,23 +107,7 @@ static void Netif_Config(void)
   netif_set_link_callback(&gnetif, ethernetif_update_config);
 }
 
-/**
-  * @brief  System Clock Configuration
-  *         The system Clock is configured as follow : 
-  *            System Clock source            = PLL (HSE)
-  *            SYSCLK(Hz)                     = 72000000
-  *            HCLK(Hz)                       = 72000000
-  *            AHB Prescaler                  = 1
-  *            APB1 Prescaler                 = 2
-  *            APB2 Prescaler                 = 1
-  *            HSE Frequency(Hz)              = 25000000
-  *            HSE PREDIV1                    = 5
-  *            HSE PREDIV2                    = 5
-  *            PLL2MUL                        = 8
-  *            Flash Latency(WS)              = 2
-  * @param  None
-  * @retval None
-  */
+
 void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef clkinitstruct = {0};
@@ -217,13 +149,7 @@ void SystemClock_Config(void)
 
 #ifdef  USE_FULL_ASSERT
 
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *   where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+
 void assert_failed(uint8_t* file, uint32_t line)
 {
   /* User can add his own implementation to report the file name and line number,
