@@ -41,6 +41,9 @@
 #include "usbd_desc.h"
 #include "usbd_msc.h"
 #include "usbd_storage.h"
+#include "ff_gen_drv.h"
+#include "sd_diskio.h"
+
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
