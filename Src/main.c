@@ -8,7 +8,7 @@
 #include "ethernetif.h"
 #include "app_ethernet.h"
 #include "tcp_echoserver.h"
-
+#include "lwip/sockets.h"
 
 struct netif gnetif;
 USBD_HandleTypeDef USBD_Device;
@@ -50,8 +50,18 @@ int main(void)
 		USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
 		USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
 		USBD_Start(&USBD_Device);
-	}else {
-		if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0)
+	}else{
+    if( FATFS_LinkDriver(&SD_Driver,SDPath) == 0 && f_mount(&SDFatFs,(TCHAR const*)SDPath,0) == FR_OK ){
+      f_open(&MyFile , "test.txt" , FA_CREATE_ALWAYS | FA_READ);
+      res = f_write(&MyFile,wtext,sizeof(wtext),(void *)&byteswritten);
+      f_close(&MyFile);
+    }else{
+      Error_Handler();
+    }
+
+
+
+		if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0 && 0) 
   {
     /*##-2- Register the file system object to the FatFs module ##############*/
     if(f_mount(&SDFatFs, (TCHAR const*)SDPath, 0) != FR_OK)
@@ -135,7 +145,7 @@ int main(void)
   }
   
   /*##-11- Unlink the RAM disk I/O driver ####################################*/
-  FATFS_UnLinkDriver(SDPath);
+    FATFS_UnLinkDriver(SDPath);
   /* Configure the BSP */
 		BSP_Config();
 			
@@ -144,7 +154,7 @@ int main(void)
 		
 		/* Configure the Network interface */
 		Netif_Config();  
-		
+		tftpd_init();
 		/* tcp echo server Init */
 		tcp_echoserver_init();
 		udp_echoclient_connect();
@@ -155,7 +165,7 @@ int main(void)
   /* Infinite loop */
   while (1)
   {  
-    udp_testsend("123 ");
+    //udp_testsend("123 ");
 		/* Read a received packet from the Ethernet buffers and send it 
        to the lwIP for handling */
     if(mode==ETHMODE){
