@@ -67,6 +67,7 @@ err_t tftp_send_message(struct udp_pcb *upcb, struct ip_addr *to_ip, unsigned sh
   err_t err;
   struct pbuf *pkt_buf; /* Chain of pbuf's to be sent */
 
+
   /* PBUF_TRANSPORT - specifies the transport layer */
   pkt_buf = pbuf_alloc(PBUF_TRANSPORT, buflen, PBUF_POOL);
 
@@ -74,7 +75,9 @@ err_t tftp_send_message(struct udp_pcb *upcb, struct ip_addr *to_ip, unsigned sh
     return ERR_MEM;
 
   /* Copy the original data buffer over to the packet buffer's payload */
-  memcpy(pkt_buf->payload, buf, buflen);
+  // memcpy(pkt_buf->payload, buf, buflen);
+  // change use this to prevent error
+  pbuf_take(pkt_buf, buf, buflen);
 
   /* Sending packet by UDP protocol */
   err = udp_sendto(upcb, pkt_buf, to_ip, to_port);
