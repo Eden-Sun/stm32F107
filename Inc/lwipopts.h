@@ -77,7 +77,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define PBUF_POOL_SIZE          12
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
-#define PBUF_POOL_BUFSIZE       512
+#define PBUF_POOL_BUFSIZE       600
 
 
 /* ---------- TCP options ---------- */
