@@ -105,7 +105,7 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
   
   /* Configure PB5 and PB8 */
-  GPIO_InitStructure.Pin = GPIO_PIN_5 | GPIO_PIN_8 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
+  GPIO_InitStructure.Pin = GPIO_PIN_8 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
  
   /* Configure PC1, PC2 */
