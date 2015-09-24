@@ -481,6 +481,11 @@
               <FileType>1</FileType>
               <FilePath>.\Src\tftputils.c</FilePath>
             </File>
+            <File>
+              <FileName>system_stm32f1xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\system_stm32f1xx.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
