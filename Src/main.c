@@ -21,8 +21,8 @@ uint8_t product_version[] = "N-BOX v0.0.0"; /* File write buffer */
 uint8_t rtext[100];                                   /* File read buffer */
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
-static void BSP_Config(void);
-static void Netif_Config(void);
+static void IO_Init(void);
+static void Netif_Config(uint8_t,uint8_t,uint8_t,uint8_t);
 static void Error_Handler(void)
 {
   while(1)
@@ -33,18 +33,12 @@ static void Error_Handler(void)
   }
 }
 
-#define USBMODE 1
-#define ETHMODE 0
-int mode = USBMODE;
 int main(void)
 {
-	mode = ETHMODE;
-	mode = USBMODE;
 	HAL_Init();  
-  
-  /* Configure the system clock to 72 Mhz */
-  SystemClock_Config();
-	BSP_Config();
+  SystemClock_Config(); // Configure the system clock to 72 Mhz 
+	IO_Init();
+  // first do a sd check
   FATFS_LinkDriver(&SD_Driver,SDPath);
   f_mount(&SDFatFs,(TCHAR const*)SDPath,0);
   f_open(&MyFile , "version.txt" , FA_CREATE_ALWAYS | FA_READ | FA_WRITE);
@@ -58,156 +52,66 @@ int main(void)
 		NVIC_SystemReset();
   }
   f_close(&MyFile);
+  FATFS_UnLinkDriver(SDPath);
+
+  // passed sd check
   BSP_LED_Off(LED_FINISH0);
   BSP_LED_Off(LED_STATE0);
   BSP_LED_On(LED_FINISH1);
   BSP_LED_On(LED_STATE1);
-  if(mode==USBMODE){
-	
-		USBD_Init(&USBD_Device, &MSC_Desc, 0);
-		USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
-		USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
-		USBD_Start(&USBD_Device);
-	}else{
-
-
-		if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0 && 0) 
-  {
-    /*##-2- Register the file system object to the FatFs module ##############*/
-    if(f_mount(&SDFatFs, (TCHAR const*)SDPath, 0) != FR_OK)
-    {
-      /* FatFs Initialization Error */
-      Error_Handler();
-    }
-    else
-    {
-      /*##-3- Create a FAT file system (format) on the logical drive #########*/
-      /* WARNING: Formatting the uSD card will delete all content on the device */
-      if(f_mkfs((TCHAR const*)SDPath, 0, 0) != FR_OK)
-      {
-        /* FatFs Format Error */
-        Error_Handler();
-      }
-      else
-      {       
-        /*##-4- Create and Open a new text file object with write access #####*/
-        if(f_open(&MyFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
-        {
-          /* 'STM32.TXT' file Open for write Error */
-          Error_Handler();
-        }
-        else
-        {
-          /*##-5- Write data to the text file ################################*/
-          res = f_write(&MyFile, product_version, sizeof(product_version), (void *)&byteswritten);
-
-          /*##-6- Close the open text file #################################*/
-          if (f_close(&MyFile) != FR_OK )
-          {
-            Error_Handler();
-          }
-          
-          if((byteswritten == 0) || (res != FR_OK))
-          {
-            /* 'STM32.TXT' file Write or EOF Error */
-            Error_Handler();
-          }
-          else
-          {      
-            /*##-7- Open the text file object with read access ###############*/
-            if(f_open(&MyFile, "STM32.TXT", FA_READ) != FR_OK)
-            {
-              /* 'STM32.TXT' file Open for read Error */
-              Error_Handler();
-            }
-            else
-            {
-              /*##-8- Read data from the text file ###########################*/
-              res = f_read(&MyFile, rtext, sizeof(rtext), (UINT*)&bytesread);
-              
-              if((bytesread == 0) || (res != FR_OK))
-              {
-                /* 'STM32.TXT' file Read or EOF Error */
-                Error_Handler();
-              }
-              else
-              {
-                /*##-9- Close the open text file #############################*/
-                f_close(&MyFile);
-                
-                /*##-10- Compare read data with the expected data ############*/
-                if((bytesread != byteswritten))
-                {                
-                  /* Read data is different from the expected data */
-                  Error_Handler();
-                }
-                else
-                {
-                  /* Success of the demo: no error occurrence */
-                  // BSP_LED_On(LED_STATE1);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  /*##-11- Unlink the RAM disk I/O driver ####################################*/
-    FATFS_UnLinkDriver(SDPath);
-  /* Configure the BSP */
-		BSP_Config();
-			
+  if( BSP_PB_GetState(SW1) == 0){    // switch on sw1 to be USB mode
+    USBD_Init(&USBD_Device, &MSC_Desc, 0);
+    USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
+    USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
+    USBD_Start(&USBD_Device);
+    while(1);
+  }else{
 		/* Initilaize the LwIP stack */
 		lwip_init();
-		
 		/* Configure the Network interface */
-		Netif_Config();  
+		Netif_Config(192,168,0,10);  
 		tftpd_init();
 		/* tcp echo server Init */
 		tcp_echoserver_init();
 		udp_echoclient_connect();
-		/* Notify user about the netwoek interface config */
-		User_notification(&gnetif);
 	}
 
   /* Infinite loop */
   while (1)
   {  
-    //udp_testsend("123 ");
-		/* Read a received packet from the Ethernet buffers and send it 
-       to the lwIP for handling */
-    // BSP_LED_Toggle(LED_STATE0);
-		HAL_Delay(200);
-    BSP_LED_Toggle(LED_FINISH0);
-		BSP_LED_Toggle(LED_STATE1);
-    if(mode==ETHMODE){
-			ethernetif_input(&gnetif);
+    // int s1 = 
+    // int s2 = BSP_PB_GetState(SW2);
+    // int s3 = BSP_PB_GetState(SW3);
+    // int ss = BSP_PB_GetState(BUTTON_START);
+		ethernetif_input(&gnetif);
 			/* Handle timeouts */
-			sys_check_timeouts();
-		}
+		sys_check_timeouts();
   }
 }
 
-static void BSP_Config(void)
+static void IO_Init(void)
 {
   /* Initialize STM3210C-EVAL's LEDs */
   BSP_LED_Init(LED_FINISH0);
 	BSP_LED_Init(LED_FINISH1);
 	BSP_LED_Init(LED_STATE0);
 	BSP_LED_Init(LED_STATE1);
+  BSP_PB_Enable_All_Clock();
+  BSP_PB_Init(SW1,BUTTON_MODE_GPIO);
+  BSP_PB_Init(SW2,BUTTON_MODE_GPIO);
+  BSP_PB_Init(SW3,BUTTON_MODE_GPIO);
+  BSP_PB_Init(BUTTON_START,BUTTON_MODE_GPIO);
   //BSP_LED_Init(LED3);
 }
 
 
-static void Netif_Config(void)
+static void Netif_Config(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0)
 {
   struct ip_addr ipaddr;
   struct ip_addr netmask;
   struct ip_addr gw;
   
-  IP4_ADDR(&ipaddr, IP_ADDR0, IP_ADDR1, IP_ADDR2, IP_ADDR3);
+  IP4_ADDR(&ipaddr, ip3, ip2, ip1, ip0);
   IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1 , NETMASK_ADDR2, NETMASK_ADDR3);
   IP4_ADDR(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
   

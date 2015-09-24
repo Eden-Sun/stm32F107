@@ -123,17 +123,20 @@ const uint16_t LED_PIN[LEDn] = {LED1_PIN,
 /**
  * @brief BUTTON variables
  */
-GPIO_TypeDef* BUTTON_PORT[BUTTONn] = {WAKEUP_BUTTON_GPIO_PORT, 
-                                      TAMPER_BUTTON_GPIO_PORT,
-                                      KEY_BUTTON_GPIO_PORT}; 
+GPIO_TypeDef* BUTTON_PORT[BUTTONn] = {SW1_GPIO_PORT, 
+                                      SW2_GPIO_PORT,
+                                      SW3_GPIO_PORT,
+                                      START_BUTTON_GPIO_PORT}; 
 
-const uint16_t BUTTON_PIN[BUTTONn] = {WAKEUP_BUTTON_PIN, 
-                                      TAMPER_BUTTON_PIN,
-                                      KEY_BUTTON_PIN}; 
+const uint16_t BUTTON_PIN[BUTTONn] = {SW1_GPIO_PIN, 
+                                      SW2_GPIO_PIN,
+                                      SW3_GPIO_PIN,
+                                      START_BUTTON_GPIO_PIN}; 
                                              
-const uint16_t BUTTON_IRQn[BUTTONn] = {WAKEUP_BUTTON_EXTI_IRQn, 
-                                       TAMPER_BUTTON_EXTI_IRQn,
-                                       KEY_BUTTON_EXTI_IRQn};
+const uint16_t BUTTON_IRQn[BUTTONn] = {SW1_EXTI_IRQn, 
+                                      SW2_EXTI_IRQn,
+                                      SW3_EXTI_IRQn,
+                                      START_BUTTON_EXTI_IRQn}; 
 
 
 /**
@@ -339,13 +342,17 @@ void BSP_LED_Toggle(Led_TypeDef Led)
   *                            with interrupt generation capability
   * @retval None
   */
+void BSP_PB_Enable_All_Clock(){
+  /* Enable All Push Button clock */
+  SW1_GPIO_CLK_ENABLE();
+  SW2_GPIO_CLK_ENABLE();
+  SW3_GPIO_CLK_ENABLE();
+  START_BUTTON_GPIO_CLK_ENABLE(); 
+}
 void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode)
 {
   GPIO_InitTypeDef gpioinitstruct = {0};
 
-  /* Enable the corresponding Push Button clock */
-  BUTTONx_GPIO_CLK_ENABLE(Button);
-  
   /* Configure Push Button pin as input */
   gpioinitstruct.Pin    = BUTTON_PIN[Button];
   gpioinitstruct.Pull   = GPIO_NOPULL;
@@ -359,16 +366,8 @@ void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode)
   }
   else if (Button_Mode == BUTTON_MODE_EXTI)
   {
-    if(Button != BUTTON_WAKEUP)
-    {
-      /* Configure Joystick Button pin as input with External interrupt, falling edge */
-      gpioinitstruct.Mode = GPIO_MODE_IT_FALLING;
-    }
-    else
-    { 
-      /* Configure Key Push Button pin as input with External interrupt, rising edge */
-      gpioinitstruct.Mode = GPIO_MODE_IT_RISING;
-    }
+    /* Configure Joystick Button pin as input with External interrupt, falling edge */
+    gpioinitstruct.Mode = GPIO_MODE_IT_FALLING;
     HAL_GPIO_Init(BUTTON_PORT[Button], &gpioinitstruct);
 
     /* Enable and set Button EXTI Interrupt to the lowest priority */

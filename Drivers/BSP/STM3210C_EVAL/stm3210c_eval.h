@@ -77,8 +77,8 @@ typedef enum
   LED4 = 3,
 
   LED_FINISH0  = LED1,
-  LED_FINISH1 = LED2,
-  LED_STATE0    = LED3,
+  LED_FINISH1  = LED2,
+  LED_STATE0   = LED3,
   LED_STATE1   = LED4
 
 } Led_TypeDef;
@@ -87,11 +87,11 @@ typedef enum
  * @brief BUTTON Types Definition
  */
 typedef enum 
-{
-  BUTTON_WAKEUP = 0,
-  BUTTON_TAMPER = 1,
-  BUTTON_KEY    = 2,
-
+{ 
+  SW1            = 0,
+  SW2            = 1,
+  SW3            = 2,
+  BUTTON_START   = 3
 } Button_TypeDef;
 
 typedef enum 
@@ -188,42 +188,49 @@ typedef enum
 /** @addtogroup STM3210C_EVAL_BUTTON
   * @{
   */  
-#define BUTTONn                          3
+#define BUTTONn                          4
+
 
 /**
  * @brief Tamper push-button
  */
-#define TAMPER_BUTTON_PIN                   GPIO_PIN_13             /* PC.13*/
-#define TAMPER_BUTTON_GPIO_PORT             GPIOC
-#define TAMPER_BUTTON_GPIO_CLK_ENABLE()     __HAL_RCC_GPIOC_CLK_ENABLE()
-#define TAMPER_BUTTON_GPIO_CLK_DISABLE()    __HAL_RCC_GPIOC_CLK_DISABLE()
-#define TAMPER_BUTTON_EXTI_IRQn             EXTI15_10_IRQn
+#define SW1_GPIO_PIN                          GPIO_PIN_15             /* PC.13*/
+#define SW1_GPIO_PORT                         GPIOB
+#define SW1_GPIO_CLK_ENABLE()                 __HAL_RCC_GPIOB_CLK_ENABLE()
+#define SW1_GPIO_CLK_DISABLE()                __HAL_RCC_GPIOB_CLK_DISABLE()
+#define SW1_EXTI_IRQn                         EXTI15_10_IRQn
+
+/**
+ * @brief Tamper push-button
+ */
+#define SW2_GPIO_PIN                          GPIO_PIN_14             /* PC.13*/
+#define SW2_GPIO_PORT                         GPIOB
+#define SW2_GPIO_CLK_ENABLE()                 __HAL_RCC_GPIOB_CLK_ENABLE()
+#define SW2_GPIO_CLK_DISABLE()                __HAL_RCC_GPIOB_CLK_DISABLE()
+#define SW2_EXTI_IRQn                         EXTI15_10_IRQn
+
+/**
+ * @brief Tamper 
+
+ */
+#define SW3_GPIO_PIN                          GPIO_PIN_5             /* PC.13*/
+#define SW3_GPIO_PORT                         GPIOB
+#define SW3_GPIO_CLK_ENABLE()                 __HAL_RCC_GPIOB_CLK_ENABLE()
+#define SW3_GPIO_CLK_DISABLE()                __HAL_RCC_GPIOB_CLK_DISABLE()
+#define SW3_EXTI_IRQn                         EXTI15_10_IRQn
 
 /**
  * @brief Key push-button
- */
-#define KEY_BUTTON_PIN                      GPIO_PIN_9             /* PB.09*/
-#define KEY_BUTTON_GPIO_PORT                GPIOB
-#define KEY_BUTTON_GPIO_CLK_ENABLE()        __HAL_RCC_GPIOB_CLK_ENABLE()
-#define KEY_BUTTON_GPIO_CLK_DISABLE()       __HAL_RCC_GPIOB_CLK_DISABLE()
-#define KEY_BUTTON_EXTI_IRQn                EXTI9_5_IRQn
+ */  
+#define START_BUTTON_GPIO_PIN                 GPIO_PIN_6             /* PA.06*/
+#define START_BUTTON_GPIO_PORT                GPIOA
+#define START_BUTTON_GPIO_CLK_ENABLE()        __HAL_RCC_GPIOA_CLK_ENABLE()
+#define START_BUTTON_GPIO_CLK_DISABLE()       __HAL_RCC_GPIOA_CLK_DISABLE()
+#define START_BUTTON_EXTI_IRQn                EXTI9_5_IRQn
 
 /**
  * @brief Wake-up push-button
  */
-#define WAKEUP_BUTTON_PIN                   GPIO_PIN_0             /* PA.00*/
-#define WAKEUP_BUTTON_GPIO_PORT             GPIOA
-#define WAKEUP_BUTTON_GPIO_CLK_ENABLE()     __HAL_RCC_GPIOA_CLK_ENABLE()
-#define WAKEUP_BUTTON_GPIO_CLK_DISABLE()    __HAL_RCC_GPIOA_CLK_DISABLE()
-#define WAKEUP_BUTTON_EXTI_IRQn             EXTI0_IRQn
-
-#define BUTTONx_GPIO_CLK_ENABLE(__BUTTON__) do { if ((__BUTTON__) == BUTTON_TAMPER) TAMPER_BUTTON_GPIO_CLK_ENABLE()  ; else \
-                                                 if ((__BUTTON__) == BUTTON_KEY) KEY_BUTTON_GPIO_CLK_ENABLE()  ; else \
-                                                 if ((__BUTTON__) == BUTTON_WAKEUP) WAKEUP_BUTTON_GPIO_CLK_ENABLE();} while(0)
-
-#define BUTTONx_GPIO_CLK_DISABLE(__BUTTON__)    (((__BUTTON__) == BUTTON_TAMPER) TAMPER_BUTTON_GPIO_CLK_DISABLE()  :\
-                                                 ((__BUTTON__) == BUTTON_KEY) KEY_BUTTON_GPIO_CLK_DISABLE()  :\
-                                                 ((__BUTTON__) == BUTTON_WAKEUP) WAKEUP_BUTTON_GPIO_CLK_DISABLE()  : 0 )
 
 /**
   * @brief IO Pins definition 
@@ -452,6 +459,7 @@ void                    BSP_LED_Init(Led_TypeDef Led);
 void                    BSP_LED_On(Led_TypeDef Led);
 void                    BSP_LED_Off(Led_TypeDef Led);
 void                    BSP_LED_Toggle(Led_TypeDef Led);
+void                    BSP_PB_Enable_All_Clock(void);
 void                    BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode);
 uint32_t                BSP_PB_GetState(Button_TypeDef Button);
 #ifdef HAL_UART_MODULE_ENABLED
