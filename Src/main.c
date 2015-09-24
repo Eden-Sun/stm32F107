@@ -18,11 +18,14 @@ char SDPath[4]; /* SD card logical drive path */
 FRESULT res;
 uint32_t byteswritten, bytesread;                     /* File write/read counts */
 uint8_t product_version[] = "N-BOX v0.0.0"; /* File write buffer */
-uint8_t rtext[100];                                   /* File read buffer */
+uint8_t rtext[100];
+uint8_t sw_status[3];
+uint8_t sw_status_temp;                                   /* File read buffer */
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void IO_Init(void);
 static void Netif_Config(uint8_t,uint8_t,uint8_t,uint8_t);
+static void Netif_ChageIp(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0);
 static void Error_Handler(void)
 {
   while(1)
@@ -69,16 +72,24 @@ int main(void)
 		/* Initilaize the LwIP stack */
 		lwip_init();
 		/* Configure the Network interface */
-		Netif_Config(192,168,0,10);  
-		tftpd_init();
+		Netif_Config(192,168,0,12);  
+		//tftpd_init();
 		/* tcp echo server Init */
-		tcp_echoserver_init();
-		udp_echoclient_connect();
+		//tcp_echoserver_init();
+		//udp_echoclient_connect();
 	}
 
   /* Infinite loop */
+  sw_status[2] = sw_status_temp;
   while (1)
   {  
+    sw_status_temp = BSP_PB_GetState(SW2);
+    if( sw_status[2] != sw_status_temp){
+      sw_status[2] = sw_status_temp;
+			if(sw_status_temp)BSP_LED_Off(LED_STATE1);
+			else BSP_LED_On(LED_STATE1);
+      Netif_ChageIp(192,168,0,sw_status_temp?12:10);
+    }
     // int s1 = 
     // int s2 = BSP_PB_GetState(SW2);
     // int s3 = BSP_PB_GetState(SW3);
@@ -104,7 +115,18 @@ static void IO_Init(void)
   //BSP_LED_Init(LED3);
 }
 
+static void Netif_ChageIp(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0)
+{
+  struct ip_addr ipaddr;
+  struct ip_addr netmask;
+  struct ip_addr gw;
+  
+  IP4_ADDR(&ipaddr, ip3, ip2, ip1, ip0);
+  IP4_ADDR(&netmask, NETMASK_ADDR0, NETMASK_ADDR1 , NETMASK_ADDR2, NETMASK_ADDR3);
+  IP4_ADDR(&gw, GW_ADDR0, GW_ADDR1, GW_ADDR2, GW_ADDR3);
 
+  netif_set_addr(&gnetif,&ipaddr,&netmask,&gw);
+}
 static void Netif_Config(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0)
 {
   struct ip_addr ipaddr;
