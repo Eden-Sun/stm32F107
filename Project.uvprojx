@@ -472,9 +472,14 @@
               <FilePath>.\Src\udp_echoclient.c</FilePath>
             </File>
             <File>
-              <FileName>tftp.c</FileName>
+              <FileName>tftpserver.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\tftp.c</FilePath>
+              <FilePath>.\Src\tftpserver.c</FilePath>
+            </File>
+            <File>
+              <FileName>tftputils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\tftputils.c</FilePath>
             </File>
           </Files>
         </Group>

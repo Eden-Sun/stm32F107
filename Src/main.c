@@ -17,7 +17,7 @@ FIL MyFile;     /* File object */
 char SDPath[4]; /* SD card logical drive path */
 FRESULT res;
 uint32_t byteswritten, bytesread;                     /* File write/read counts */
-uint8_t wtext[] = "This is STM32 working with FatFs + eth"; /* File write buffer */
+uint8_t product_version[] = "N-BOX v0.0.0"; /* File write buffer */
 uint8_t rtext[100];                                   /* File read buffer */
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -28,7 +28,7 @@ static void Error_Handler(void)
   while(1)
   {
     /* Toggle LED_RED fast */
-    BSP_LED_Toggle(LED_RED);
+    BSP_LED_Toggle(LED_STATE0);
     HAL_Delay(40);
   }
 }
@@ -39,26 +39,36 @@ int mode = USBMODE;
 int main(void)
 {
 	mode = ETHMODE;
-	//mode = USBMODE;
+	mode = USBMODE;
 	HAL_Init();  
   
   /* Configure the system clock to 72 Mhz */
   SystemClock_Config();
-	if(mode){
+	BSP_Config();
+  FATFS_LinkDriver(&SD_Driver,SDPath);
+  f_mount(&SDFatFs,(TCHAR const*)SDPath,0);
+  f_open(&MyFile , "version.txt" , FA_CREATE_ALWAYS | FA_READ | FA_WRITE);
+  res = f_write(&MyFile,product_version,sizeof(product_version),(void *)&byteswritten);
+  if(res != FR_OK)  // means if no plug in a sd card then blink reds and reboot
+  {  
+    HAL_Delay(50);  // reboot take about 100ms
+		BSP_LED_Toggle(LED_FINISH0);
+    BSP_LED_Toggle(LED_STATE0);
+    HAL_Delay(150);
+		NVIC_SystemReset();
+  }
+  f_close(&MyFile);
+  BSP_LED_Off(LED_FINISH0);
+  BSP_LED_Off(LED_STATE0);
+  BSP_LED_On(LED_FINISH1);
+  BSP_LED_On(LED_STATE1);
+  if(mode==USBMODE){
 	
 		USBD_Init(&USBD_Device, &MSC_Desc, 0);
 		USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
 		USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
 		USBD_Start(&USBD_Device);
 	}else{
-    if( FATFS_LinkDriver(&SD_Driver,SDPath) == 0 && f_mount(&SDFatFs,(TCHAR const*)SDPath,0) == FR_OK ){
-      f_open(&MyFile , "test.txt" , FA_CREATE_ALWAYS | FA_READ);
-      res = f_write(&MyFile,wtext,sizeof(wtext),(void *)&byteswritten);
-      f_close(&MyFile);
-    }else{
-      Error_Handler();
-    }
-
 
 
 		if(FATFS_LinkDriver(&SD_Driver, SDPath) == 0 && 0) 
@@ -89,7 +99,7 @@ int main(void)
         else
         {
           /*##-5- Write data to the text file ################################*/
-          res = f_write(&MyFile, wtext, sizeof(wtext), (void *)&byteswritten);
+          res = f_write(&MyFile, product_version, sizeof(product_version), (void *)&byteswritten);
 
           /*##-6- Close the open text file #################################*/
           if (f_close(&MyFile) != FR_OK )
@@ -134,7 +144,7 @@ int main(void)
                 else
                 {
                   /* Success of the demo: no error occurrence */
-                  BSP_LED_On(LED_GREEN);
+                  // BSP_LED_On(LED_STATE1);
                 }
               }
             }
@@ -168,6 +178,10 @@ int main(void)
     //udp_testsend("123 ");
 		/* Read a received packet from the Ethernet buffers and send it 
        to the lwIP for handling */
+    // BSP_LED_Toggle(LED_STATE0);
+		HAL_Delay(200);
+    BSP_LED_Toggle(LED_FINISH0);
+		BSP_LED_Toggle(LED_STATE1);
     if(mode==ETHMODE){
 			ethernetif_input(&gnetif);
 			/* Handle timeouts */
@@ -179,8 +193,11 @@ int main(void)
 static void BSP_Config(void)
 {
   /* Initialize STM3210C-EVAL's LEDs */
-  BSP_LED_Init(LED1);
-  BSP_LED_Init(LED2);
+  BSP_LED_Init(LED_FINISH0);
+	BSP_LED_Init(LED_FINISH1);
+	BSP_LED_Init(LED_STATE0);
+	BSP_LED_Init(LED_STATE1);
+  //BSP_LED_Init(LED3);
 }
 
 

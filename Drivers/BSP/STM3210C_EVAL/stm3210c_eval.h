@@ -76,10 +76,10 @@ typedef enum
   LED3 = 2,
   LED4 = 3,
 
-  LED_GREEN  = LED1,
-  LED_ORANGE = LED2,
-  LED_RED    = LED3,
-  LED_BLUE   = LED4
+  LED_FINISH0  = LED1,
+  LED_FINISH1 = LED2,
+  LED_STATE0    = LED3,
+  LED_STATE1   = LED4
 
 } Led_TypeDef;
 
@@ -149,25 +149,25 @@ typedef enum
   */
 #define LEDn                             4
 
-#define LED1_PIN                         GPIO_PIN_7             /* PD.07*/
-#define LED1_GPIO_PORT                   GPIOD
-#define LED1_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOD_CLK_ENABLE()
-#define LED1_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOD_CLK_DISABLE()
+#define LED1_PIN                         GPIO_PIN_6             /* PD.07*/
+#define LED1_GPIO_PORT                   GPIOC
+#define LED1_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOC_CLK_ENABLE()
+#define LED1_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOC_CLK_DISABLE()
   
-#define LED2_PIN                         GPIO_PIN_13            /* PD.13*/
-#define LED2_GPIO_PORT                   GPIOD
-#define LED2_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOD_CLK_ENABLE()
-#define LED2_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOD_CLK_DISABLE()
+#define LED2_PIN                         GPIO_PIN_7            /* PD.13*/
+#define LED2_GPIO_PORT                   GPIOC
+#define LED2_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOC_CLK_ENABLE()
+#define LED2_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOC_CLK_DISABLE()
 
 
-#define LED3_PIN                         GPIO_PIN_3            /* PD.03*/
-#define LED3_GPIO_PORT                   GPIOD
-#define LED3_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOD_CLK_ENABLE()
-#define LED3_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOD_CLK_DISABLE()
+#define LED3_PIN                         GPIO_PIN_8            /* PD.03*/
+#define LED3_GPIO_PORT                   GPIOC
+#define LED3_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOC_CLK_ENABLE()
+#define LED3_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOC_CLK_DISABLE()
 
 
-#define LED4_PIN                         GPIO_PIN_4            /* PD.04*/
-#define LED4_GPIO_PORT                   GPIOD
+#define LED4_PIN                         GPIO_PIN_9            /* PD.04*/
+#define LED4_GPIO_PORT                   GPIOC
 #define LED4_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOD_CLK_ENABLE()
 #define LED4_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOD_CLK_DISABLE()
 
