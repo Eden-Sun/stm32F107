@@ -9,6 +9,9 @@
 #include "app_ethernet.h"
 #include "tcp_echoserver.h"
 #include "lwip/sockets.h"
+#include "lwip/pbuf.h"
+#include "lwip/raw.h"
+
 
 struct netif gnetif;
 USBD_HandleTypeDef USBD_Device;
@@ -18,9 +21,17 @@ char SDPath[4]; /* SD card logical drive path */
 FRESULT res;
 uint32_t byteswritten, bytesread;                     /* File write/read counts */
 uint8_t product_version[] = "N-BOX v0.0.0"; /* File write buffer */
-uint8_t rtext[100];
+
 uint8_t sw_status[3];
 uint8_t sw_status_temp;                                   /* File read buffer */
+uint8_t getHandShake=0;
+uint8_t rtext[100];
+uint8_t buf[60]={
+  0x01,0x80,0xc2,0x00,0x00,0x0e,
+  0x02,0x00,0x00,0x00,0x00,0x00,
+  0x67,0x27
+};
+
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void IO_Init(void);
@@ -61,7 +72,7 @@ int main(void)
   BSP_LED_Off(LED_FINISH0);
   BSP_LED_Off(LED_STATE0);
   BSP_LED_On(LED_FINISH1);
-  BSP_LED_On(LED_STATE1);
+  
   if( BSP_PB_GetState(SW1) == 0){    // switch on sw1 to be USB mode
     USBD_Init(&USBD_Device, &MSC_Desc, 0);
     USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
@@ -69,40 +80,84 @@ int main(void)
     USBD_Start(&USBD_Device);
     while(1);
   }else{
+    // check file to import
+    //f_findfirst(&dj, &fno, "", "dsc*.jpg");
+    //cfgimport_<macaddr>.yml
 		/* Initilaize the LwIP stack */
 		lwip_init();
 		/* Configure the Network interface */
 		Netif_Config(192,168,0,12);  
-		//tftpd_init();
+		tftpd_init();
 		/* tcp echo server Init */
 		//tcp_echoserver_init();
 		//udp_echoclient_connect();
 	}
+  while(1){
+    ethernetif_input(&gnetif,0,rtext);
+    /* Handle timeouts */
+    sys_check_timeouts();
+  }
 
   /* Infinite loop */
   sw_status[2] = sw_status_temp;
-  while (1)
-  {  
-    sw_status_temp = BSP_PB_GetState(SW2);
-    if( sw_status[2] != sw_status_temp){
-      sw_status[2] = sw_status_temp;
-			if(sw_status_temp)BSP_LED_Off(LED_STATE1);
-			else BSP_LED_On(LED_STATE1);
-      Netif_ChageIp(192,168,0,sw_status_temp?12:10);
-    }
-    // int s1 = 
-    // int s2 = BSP_PB_GetState(SW2);
-    // int s3 = BSP_PB_GetState(SW3);
+  struct pbuf *leyer2 ;
+	leyer2 = pbuf_alloc(PBUF_TRANSPORT,60,PBUF_POOL);
+  struct ip_addr ;
+  getHandShake = 1 ;
+  buf[14]=0x0f; // set get-IP packet
+  pbuf_take(leyer2,buf,40);
+  sw_status_temp = BSP_PB_GetState(SW2);
+    // if( sw_status[2] != sw_status_temp){
+      // sw_status[2] = sw_status_temp;
+      // if(sw_status_temp)BSP_LED_Off(LED_STATE1);
+      // else BSP_LED_On(LED_STATE1);
+    // }
     // int ss = BSP_PB_GetState(BUTTON_START);
-		ethernetif_input(&gnetif);
-			/* Handle timeouts */
-		sys_check_timeouts();
+  while (getHandShake&&0)
+  {  
+    gnetif.linkoutput(&gnetif,leyer2);
+    HAL_Delay(50);
+    ethernetif_input(&gnetif,getHandShake,rtext);
+    if(rtext[12]==0x67&&rtext[13]==0x27&&rtext[14]==0x8f){
+      getHandShake = 0;
+      BSP_LED_On(LED_STATE1);
+      Netif_ChageIp(rtext[15],rtext[16],rtext[17],rtext[18]);  
+      tftpd_init();
+    }
+    sys_check_timeouts();
+  }
+  while(1){
+    if(BSP_PB_GetState(BUTTON_START)==0){   // press start btn
+      HAL_Delay(50);
+      while(BSP_PB_GetState(BUTTON_START)==0);
+      BSP_LED_Toggle(LED_STATE1);
+      uint8_t switchMode = BSP_PB_GetState(SW1)<<2 | BSP_PB_GetState(SW2)<<1 | BSP_PB_GetState(SW3);
+      switch(switchMode){
+        case 7:    //jumper 000 export config 
+          buf[14]=0x00;
+        break;
+        case 6:    //jumper 001 import config 
+          buf[14]=0x01;
+        break;
+        case 4:    //jumper 01X upload firmware 
+				case 5:        
+          buf[14]=0x02;
+        break;
+        default:
+        break;
+      }
+      pbuf_take(leyer2,buf,40);
+      gnetif.linkoutput(&gnetif,leyer2);
+    }
+    ethernetif_input(&gnetif,0,rtext);
+    /* Handle timeouts */
+    sys_check_timeouts();
   }
 }
 
 static void IO_Init(void)
 {
-  /* Initialize STM3210C-EVAL's LEDs */
+  /* Initialize STM3210C-EVAL's LEDs & BUTTONs */
   BSP_LED_Init(LED_FINISH0);
 	BSP_LED_Init(LED_FINISH1);
 	BSP_LED_Init(LED_STATE0);
@@ -112,7 +167,7 @@ static void IO_Init(void)
   BSP_PB_Init(SW2,BUTTON_MODE_GPIO);
   BSP_PB_Init(SW3,BUTTON_MODE_GPIO);
   BSP_PB_Init(BUTTON_START,BUTTON_MODE_GPIO);
-  //BSP_LED_Init(LED3);
+ 
 }
 
 static void Netif_ChageIp(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0)
@@ -157,7 +212,9 @@ static void Netif_Config(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0)
   }
   
   /* Set the link callback function, this function is called on change of link status*/
-  netif_set_link_callback(&gnetif, ethernetif_update_config);
+  //netif_set_link_callback(&gnetif, ethernetif_update_config);
+	
+	// not work link changes,and still works without it
 }
 
 

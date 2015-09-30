@@ -205,7 +205,7 @@ static void low_level_init(struct netif *netif)
   netif->hwaddr[3] =  MAC_ADDR3;
   netif->hwaddr[4] =  MAC_ADDR4;
   netif->hwaddr[5] =  MAC_ADDR5;
-  
+ 
   /* maximum transfer unit */
   netif->mtu = 1500;
   
@@ -417,17 +417,31 @@ static struct pbuf * low_level_input(struct netif *netif)
   *
   * @param netif the lwip network interface structure for this ethernetif
   */
-void ethernetif_input(struct netif *netif)
+void ethernetif_input(struct netif *netif,uint32_t nego,uint8_t *buffer)
 {
   err_t err;
+
   struct pbuf *p;
-  
+  struct eth_hdr* ethhdr;
+  uint16_t type ;
   /* move received packet into a new pbuf */
   p = low_level_input(netif);
-    
   /* no packet could be read, silently ignore this */
   if (p == NULL) return;
-    
+  if(nego){
+    ethhdr = (struct eth_hdr *)p->payload;
+    type = ethhdr->type;
+    if (type ==0x2767){
+      for (int i = 0; i < p->len; ++i)buffer[i]=pbuf_get_at(p,i);
+			pbuf_free(p);
+      return;
+    }else{
+      buffer[12]=0;
+      buffer[13]=0;
+    }
+  }
+  
+
   /* entry point to the LwIP stack */
   err = netif->input(p, netif);
     
@@ -591,7 +605,8 @@ void ethernetif_update_config(struct netif *netif)
     }
 
     /* ETHERNET MAC Re-Configuration */
-    HAL_ETH_ConfigMAC(&EthHandle, (ETH_MACInitTypeDef *) NULL);
+    
+    HAL_ETH_ConfigMAC(&EthHandle, (ETH_MACInitTypeDef*)NULL);
 
     /* Restart MAC interface */
     HAL_ETH_Start(&EthHandle);   
