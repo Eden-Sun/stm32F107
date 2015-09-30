@@ -24,14 +24,16 @@ uint8_t product_version[] = "N-BOX v0.0.0"; /* File write buffer */
 
 uint8_t sw_status[3];
 uint8_t sw_status_temp;                                   /* File read buffer */
-uint8_t getHandShake=0;
+uint16_t getHandShake=0;
 uint8_t rtext[100];
 uint8_t buf[60]={
   0x01,0x80,0xc2,0x00,0x00,0x0e,
   0x02,0x00,0x00,0x00,0x00,0x00,
   0x67,0x27
 };
-
+uint16_t firmName_length;
+uint16_t firmName_counter=0;
+uint8_t firmName[60];
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void IO_Init(void);
@@ -82,13 +84,25 @@ int main(void)
     while(1);
   }else{
     // check file to import
-    //f_findfirst(&dj, &fno, "", "dsc*.jpg");
-    //cfgimport_<macaddr>.yml
+    DIR dj;         /* Directory search object */
+    FILINFO fno;    /* File information */
+    char lfn[_MAX_LFN + 1];
+    fno.lfname = lfn;
+    fno.lfsize = _MAX_LFN + 1;
+    res = f_findfirst(&dj, &fno, "", "*.upg");
+    while (res == FR_OK && fno.fname[0] && firmName_counter<2) {
+			if((*fno.lfname)!='.'){
+        firmName_length = strlen(fno.lfname);
+        strcpy(firmName,fno.lfname);
+        firmName_counter++;
+      }
+      res = f_findnext(&dj, &fno);              /* Search for next item */
+		}
+    f_closedir(&dj);
 		/* Initilaize the LwIP stack */
 		lwip_init();
 		/* Configure the Network interface */
 		Netif_Config(192,168,0,12);  
-		//tftpd_init();
 		/* tcp echo server Init */
 		//tcp_echoserver_init();
 		//udp_echoclient_connect();
@@ -112,11 +126,17 @@ int main(void)
     // int ss = BSP_PB_GetState(BUTTON_START);
   while (getHandShake)
   {  
-    gnetif.linkoutput(&gnetif,leyer2);
-    HAL_Delay(50);
+    if(getHandShake%512==1){
+      gnetif.linkoutput(&gnetif,leyer2);
+      BSP_LED_Toggle(LED_STATE0);
+    }
+    HAL_Delay(1);
+    if(getHandShake==65535)getHandShake=1;
+    else getHandShake++;
     ethernetif_input(&gnetif,getHandShake,rtext);
     if(rtext[12]==0x67&&rtext[13]==0x27&&rtext[14]==0x8f){
       getHandShake = 0;
+      BSP_LED_Off(LED_STATE0);
       BSP_LED_On(LED_STATE1);
       Netif_ChageIp(rtext[15],rtext[16],rtext[17],rtext[18]);  
       tftpd_init();
@@ -137,8 +157,10 @@ int main(void)
           buf[14]=0x01;
         break;
         case 4:    //jumper 01X upload firmware 
-				case 5:        
+        case 5:        
           buf[14]=0x02;
+          buf[15]=firmName_length;
+          strcpy(buf+16,firmName);
         break;
         default:
         break;
