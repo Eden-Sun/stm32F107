@@ -66,7 +66,7 @@ int main(void)
 		NVIC_SystemReset();
   }
   f_close(&MyFile);
-  FATFS_UnLinkDriver(SDPath);
+  
 
   // passed sd check
   BSP_LED_Off(LED_FINISH0);
@@ -74,7 +74,8 @@ int main(void)
   BSP_LED_On(LED_FINISH1);
   
   if( BSP_PB_GetState(SW1) == 0){    // switch on sw1 to be USB mode
-    USBD_Init(&USBD_Device, &MSC_Desc, 0);
+    FATFS_UnLinkDriver(SDPath);  // only unlink if going to USB MODE ******   VERY IMPORTANT
+		USBD_Init(&USBD_Device, &MSC_Desc, 0);
     USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
     USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
     USBD_Start(&USBD_Device);
@@ -87,16 +88,12 @@ int main(void)
 		lwip_init();
 		/* Configure the Network interface */
 		Netif_Config(192,168,0,12);  
-		tftpd_init();
+		//tftpd_init();
 		/* tcp echo server Init */
 		//tcp_echoserver_init();
 		//udp_echoclient_connect();
 	}
-  while(1){
-    ethernetif_input(&gnetif,0,rtext);
-    /* Handle timeouts */
-    sys_check_timeouts();
-  }
+
 
   /* Infinite loop */
   sw_status[2] = sw_status_temp;
@@ -113,7 +110,7 @@ int main(void)
       // else BSP_LED_On(LED_STATE1);
     // }
     // int ss = BSP_PB_GetState(BUTTON_START);
-  while (getHandShake&&0)
+  while (getHandShake)
   {  
     gnetif.linkoutput(&gnetif,leyer2);
     HAL_Delay(50);
