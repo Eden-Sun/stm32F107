@@ -37,6 +37,7 @@ uint16_t tftpState = 0;
 struct pbuf *leyer2 ;
 TIM_HandleTypeDef    TimHandle;
 uint32_t uwPrescalerValue = 0;
+uint16_t LED_counter=0;
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void IO_Init(void);
@@ -49,6 +50,8 @@ static void Netif_ChageIp(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0);
 #define tftpIDLE 0
 #define tftpSTART 1
 #define tftpLOADING 2
+#define tftpFAIL 3
+#define tftpOK 4
 void led_left_no(){
   BSP_LED_Off(left_red);
   BSP_LED_Off(left_green);
@@ -96,7 +99,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(afterFirstTIM){
 		HAL_TIM_Base_Stop_IT(&TimHandle);
-		led_right_no();
     tftpState=tftpIDLE;
 	}
 	afterFirstTIM++;
@@ -147,7 +149,17 @@ int main(void)
     USBD_Start(&USBD_Device);
     led_left_green();
     led_right_green();
-    while(1);
+    while(1){
+			if(LED_counter<200){
+				led_left_green();
+				led_right_green();
+			}else if(LED_counter<400){
+        led_left_no();
+				led_right_no();
+      }else LED_counter=0;
+      HAL_Delay(1);
+      LED_counter++;
+		};
   }else{
     // check file to import
     DIR dj;         /* Directory search object */
@@ -205,23 +217,39 @@ int main(void)
   
   while(1){
     ethernetif_input(&gnetif,tftpState>0,rtext);
-    if(tftpState>0&&rtext[12]==0x67&&rtext[13]==0x27&&rtext[14]==0x80){
+    if( tftpState > tftpIDLE && tftpState < tftpFAIL && rtext[12]==0x67 && rtext[13]==0x27 && rtext[14]==0x80){
       if(rtext[15]==0x02){
         tftpState=tftpLOADING;
+        //BSP_LED_Toggle(left_green);
+        led_right_red();
         HAL_TIM_Base_Stop_IT(&TimHandle);
-      }
-      else if(rtext[15]==0x01){
-        tftpState = tftpIDLE;
-        led_right_green();
-      }
-      else {
-        led_right_no();
-        tftpState = tftpIDLE;
+      } else if(rtext[15]==0x01){  // success
+        tftpState = tftpOK;
+      } else {    //  fail
+        tftpState = tftpFAIL;
       }
       rtext[12]=0;
 			rtext[13]=0;
 			rtext[14]=0;
     }
+    if(tftpState==tftpIDLE){
+      led_right_no();
+    }else if (tftpState==tftpSTART){
+      led_right_red();
+    }else if (tftpState==tftpLOADING){
+
+      BSP_LED_Toggle(right_green);
+      BSP_LED_Toggle(right_red);
+    }else if (tftpState==tftpFAIL){
+      if(LED_counter<200)led_right_red();
+      else if(LED_counter<400){
+        led_right_no();
+      }else LED_counter=0;
+      HAL_Delay(1);
+      LED_counter++;
+		}else if (tftpState==tftpOK){
+      led_right_green();
+    } 
     /* Handle timeouts */
     sys_check_timeouts();
   }
@@ -232,12 +260,11 @@ uint32_t time_length ;
 void EXTI9_5_IRQHandler(void) {
   /* Make sure that interrupt flag is set */
   HAL_GPIO_EXTI_IRQHandler( START_BUTTON_GPIO_PIN);
-  if(BSP_PB_GetState(BUTTON_START)==0&&tftpState==tftpIDLE){   // press start btn
+  if(BSP_PB_GetState(BUTTON_START)==0 && (tftpState==tftpIDLE||tftpState==tftpFAIL||tftpState==tftpOK)){   // press start btn
     time_length = sys_now()-time_pre;
     if (time_length<1000)return;
     time_pre = sys_now();
     while(BSP_PB_GetState(BUTTON_START)==0);
-    led_right_red();
     HAL_TIM_Base_Start_IT(&TimHandle);
     tftpState = tftpSTART;
     uint8_t switchMode = BSP_PB_GetState(SW1)<<2 | BSP_PB_GetState(SW2)<<1 | BSP_PB_GetState(SW3);
@@ -253,6 +280,11 @@ void EXTI9_5_IRQHandler(void) {
         buf[14]=0x02;
         buf[15]=firmName_length;
         strcpy(buf+16,firmName);
+        if(firmName_counter>1){
+          tftpState = tftpFAIL;
+          HAL_TIM_Base_Stop_IT(&TimHandle);
+          return;
+        }
       break;
       default:
       break;
