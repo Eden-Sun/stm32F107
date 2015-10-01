@@ -201,6 +201,8 @@ int main(void)
     }
     sys_check_timeouts();
   }
+  BSP_PB_Init(BUTTON_START,BUTTON_MODE_EXTI);
+  
   while(1){
     ethernetif_input(&gnetif,tftpState>0,rtext);
     if(tftpState>0&&rtext[12]==0x67&&rtext[13]==0x27&&rtext[14]==0x80){
@@ -270,8 +272,7 @@ static void IO_Init(void)
   BSP_PB_Enable_All_Clock();
   BSP_PB_Init(SW1,BUTTON_MODE_GPIO);
   BSP_PB_Init(SW2,BUTTON_MODE_GPIO);
-  BSP_PB_Init(SW3,BUTTON_MODE_GPIO);
-  BSP_PB_Init(BUTTON_START,BUTTON_MODE_EXTI);
+  BSP_PB_Init(SW3,BUTTON_MODE_GPIO);  
  
 }
 
