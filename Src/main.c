@@ -21,7 +21,6 @@ char SDPath[4]; /* SD card logical drive path */
 FRESULT res;
 uint32_t byteswritten, bytesread;                     /* File write/read counts */
 uint8_t product_version[] = "N-BOX v0.0.0"; /* File write buffer */
-
 uint8_t sw_status[3];
 uint8_t sw_status_temp;                                   /* File read buffer */
 uint16_t getHandShake=0;
@@ -34,26 +33,96 @@ uint8_t buf[60]={
 uint16_t firmName_length;
 uint16_t firmName_counter=0;
 uint8_t firmName[60];
+uint16_t tftpState = 0;
+struct pbuf *leyer2 ;
+TIM_HandleTypeDef    TimHandle;
+uint32_t uwPrescalerValue = 0;
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void IO_Init(void);
 static void Netif_Config(uint8_t,uint8_t,uint8_t,uint8_t);
 static void Netif_ChageIp(uint8_t ip3,uint8_t ip2,uint8_t ip1,uint8_t ip0);
+#define left_green LED_FINISH1
+#define left_red LED_FINISH0
+#define right_green LED_STATE1
+#define right_red LED_STATE0
+#define tftpIDLE 0
+#define tftpSTART 1
+#define tftpLOADING 2
+void led_left_no(){
+  BSP_LED_Off(left_red);
+  BSP_LED_Off(left_green);
+}
+void led_left_green(){
+  BSP_LED_Off(left_red);
+  BSP_LED_On(left_green);
+}
+void led_left_red(){
+  BSP_LED_Off(left_green);
+  BSP_LED_On(left_red);
+}
+void led_right_no(){
+  BSP_LED_Off(right_red);
+  BSP_LED_Off(right_green);
+}
+void led_right_green(){
+  BSP_LED_Off(right_red);
+  BSP_LED_On(right_green);
+}
+void led_right_red(){
+  BSP_LED_Off(right_green);
+  BSP_LED_On(right_red);
+}
 static void Error_Handler(void)
 {
+  led_left_green();
+  led_right_green();
   while(1)
   {
     /* Toggle LED_RED fast */
-    BSP_LED_Toggle(LED_STATE0);
+    BSP_LED_Toggle(left_green);
+    BSP_LED_Toggle(left_red);
+    BSP_LED_Toggle(right_green);
+    BSP_LED_Toggle(right_red);
     HAL_Delay(40);
   }
 }
+void TIM3_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&TimHandle);
+}
+uint8_t afterFirstTIM = 0;
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(afterFirstTIM){
+		HAL_TIM_Base_Stop_IT(&TimHandle);
+		led_right_no();
+    tftpState=tftpIDLE;
+	}
+	afterFirstTIM++;
+}
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
+{
+  __HAL_RCC_TIM3_CLK_ENABLE();
+  HAL_NVIC_SetPriority(TIM3_IRQn, 3, 0);
+  HAL_NVIC_EnableIRQ(TIM3_IRQn);
+}
 
+void timInit(){
+	uwPrescalerValue = (uint32_t)(SystemCoreClock*3 / 10000) - 1;
+  TimHandle.Instance = TIM3;
+	TimHandle.Init.Period            = 10000 - 1;
+  TimHandle.Init.Prescaler         = uwPrescalerValue;
+  TimHandle.Init.ClockDivision     = 0;
+  TimHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  TimHandle.Init.RepetitionCounter = 1;
+  HAL_TIM_Base_Init(&TimHandle);
+}
 int main(void)
 {
-	HAL_Init();  
+  HAL_Init();  
   SystemClock_Config(); // Configure the system clock to 72 Mhz 
-	IO_Init();
+  IO_Init();
   // first do a sd check
   FATFS_LinkDriver(&SD_Driver,SDPath);
   f_mount(&SDFatFs,(TCHAR const*)SDPath,0);
@@ -62,25 +131,22 @@ int main(void)
   if(res != FR_OK)  // means if no plug in a sd card then blink reds and reboot
   {  
     HAL_Delay(50);  // reboot take about 100ms
-		BSP_LED_Toggle(LED_FINISH0);
-    BSP_LED_Toggle(LED_STATE0);
+		BSP_LED_Toggle(right_red);
+    BSP_LED_Toggle(left_red);
     HAL_Delay(150);
 		NVIC_SystemReset();
   }
   f_close(&MyFile);
   
-
-  // passed sd check
-  BSP_LED_Off(LED_FINISH0);
-  BSP_LED_Off(LED_STATE0);
-  BSP_LED_On(LED_FINISH1);
   
   if( BSP_PB_GetState(SW1) == 0){    // switch on sw1 to be USB mode
     FATFS_UnLinkDriver(SDPath);  // only unlink if going to USB MODE ******   VERY IMPORTANT
-		USBD_Init(&USBD_Device, &MSC_Desc, 0);
+    USBD_Init(&USBD_Device, &MSC_Desc, 0);
     USBD_RegisterClass(&USBD_Device, USBD_MSC_CLASS);
     USBD_MSC_RegisterStorage(&USBD_Device, &USBD_DISK_fops);
     USBD_Start(&USBD_Device);
+    led_left_green();
+    led_right_green();
     while(1);
   }else{
     // check file to import
@@ -108,27 +174,17 @@ int main(void)
 		//udp_echoclient_connect();
 	}
 
-
-  /* Infinite loop */
-  sw_status[2] = sw_status_temp;
-  struct pbuf *leyer2 ;
 	leyer2 = pbuf_alloc(PBUF_TRANSPORT,60,PBUF_POOL);
-  struct ip_addr ;
   getHandShake = 1 ;
   buf[14]=0x0f; // set get-IP packet
   pbuf_take(leyer2,buf,40);
-  sw_status_temp = BSP_PB_GetState(SW2);
-    // if( sw_status[2] != sw_status_temp){
-      // sw_status[2] = sw_status_temp;
-      // if(sw_status_temp)BSP_LED_Off(LED_STATE1);
-      // else BSP_LED_On(LED_STATE1);
-    // }
-    // int ss = BSP_PB_GetState(BUTTON_START);
-  while (getHandShake)
+	timInit();
+  #define NEEDIP 1
+  while (getHandShake&&NEEDIP)
   {  
     if(getHandShake%512==1){
       gnetif.linkoutput(&gnetif,leyer2);
-      BSP_LED_Toggle(LED_STATE0);
+      BSP_LED_Toggle(left_red);
     }
     HAL_Delay(1);
     if(getHandShake==65535)getHandShake=1;
@@ -136,41 +192,71 @@ int main(void)
     ethernetif_input(&gnetif,getHandShake,rtext);
     if(rtext[12]==0x67&&rtext[13]==0x27&&rtext[14]==0x8f){
       getHandShake = 0;
-      BSP_LED_Off(LED_STATE0);
-      BSP_LED_On(LED_STATE1);
+      led_left_green();
       Netif_ChageIp(rtext[15],rtext[16],rtext[17],rtext[18]);  
       tftpd_init();
+			rtext[12]=0;
+			rtext[13]=0;
+			rtext[14]=0;
     }
     sys_check_timeouts();
   }
   while(1){
-    if(BSP_PB_GetState(BUTTON_START)==0){   // press start btn
-      HAL_Delay(50);
-      while(BSP_PB_GetState(BUTTON_START)==0);
-      BSP_LED_Toggle(LED_STATE1);
-      uint8_t switchMode = BSP_PB_GetState(SW1)<<2 | BSP_PB_GetState(SW2)<<1 | BSP_PB_GetState(SW3);
-      switch(switchMode){
-        case 7:    //jumper 000 export config 
-          buf[14]=0x00;
-        break;
-        case 6:    //jumper 001 import config 
-          buf[14]=0x01;
-        break;
-        case 4:    //jumper 01X upload firmware 
-        case 5:        
-          buf[14]=0x02;
-          buf[15]=firmName_length;
-          strcpy(buf+16,firmName);
-        break;
-        default:
-        break;
+    ethernetif_input(&gnetif,tftpState>0,rtext);
+    if(tftpState>0&&rtext[12]==0x67&&rtext[13]==0x27&&rtext[14]==0x80){
+      if(rtext[15]==0x02){
+        tftpState=tftpLOADING;
+        HAL_TIM_Base_Stop_IT(&TimHandle);
       }
-      pbuf_take(leyer2,buf,40);
-      gnetif.linkoutput(&gnetif,leyer2);
+      else if(rtext[15]==0x01){
+        tftpState = tftpIDLE;
+        led_right_green();
+      }
+      else {
+        led_right_no();
+        tftpState = tftpIDLE;
+      }
+      rtext[12]=0;
+			rtext[13]=0;
+			rtext[14]=0;
     }
-    ethernetif_input(&gnetif,0,rtext);
     /* Handle timeouts */
     sys_check_timeouts();
+  }
+}
+uint32_t time_pre = 0;
+uint32_t time_length ;
+
+void EXTI9_5_IRQHandler(void) {
+  /* Make sure that interrupt flag is set */
+  HAL_GPIO_EXTI_IRQHandler( START_BUTTON_GPIO_PIN);
+  if(BSP_PB_GetState(BUTTON_START)==0&&tftpState==tftpIDLE){   // press start btn
+    time_length = sys_now()-time_pre;
+    if (time_length<1000)return;
+    time_pre = sys_now();
+    while(BSP_PB_GetState(BUTTON_START)==0);
+    led_right_red();
+    HAL_TIM_Base_Start_IT(&TimHandle);
+    tftpState = tftpSTART;
+    uint8_t switchMode = BSP_PB_GetState(SW1)<<2 | BSP_PB_GetState(SW2)<<1 | BSP_PB_GetState(SW3);
+    switch(switchMode){
+      case 7:    //jumper 000 export config 
+        buf[14]=0x01;
+      break;
+      case 6:    //jumper 001 import config 
+        buf[14]=0x00;
+      break;
+      case 4:    //jumper 01X upload firmware 
+      case 5:        
+        buf[14]=0x02;
+        buf[15]=firmName_length;
+        strcpy(buf+16,firmName);
+      break;
+      default:
+      break;
+    }
+    pbuf_take(leyer2,buf,40);
+    gnetif.linkoutput(&gnetif,leyer2);
   }
 }
 
@@ -185,7 +271,7 @@ static void IO_Init(void)
   BSP_PB_Init(SW1,BUTTON_MODE_GPIO);
   BSP_PB_Init(SW2,BUTTON_MODE_GPIO);
   BSP_PB_Init(SW3,BUTTON_MODE_GPIO);
-  BSP_PB_Init(BUTTON_START,BUTTON_MODE_GPIO);
+  BSP_PB_Init(BUTTON_START,BUTTON_MODE_EXTI);
  
 }
 
