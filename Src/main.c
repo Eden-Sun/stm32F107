@@ -122,9 +122,9 @@ void timInit(){
 }
 int main(void)
 {
-  HAL_Init();  
+	HAL_Init();  
   SystemClock_Config(); // Configure the system clock to 72 Mhz 
-  IO_Init();
+	IO_Init();
   // first do a sd check
   FATFS_LinkDriver(&SD_Driver,SDPath);
   f_mount(&SDFatFs,(TCHAR const*)SDPath,0);
@@ -149,17 +149,7 @@ int main(void)
     USBD_Start(&USBD_Device);
     led_left_green();
     led_right_green();
-    while(1){
-			if(LED_counter<200){
-				led_left_green();
-				led_right_green();
-			}else if(LED_counter<400){
-        led_left_no();
-				led_right_no();
-      }else LED_counter=0;
-      HAL_Delay(1);
-      LED_counter++;
-		};
+    while(1);
   }else{
     // check file to import
     DIR dj;         /* Directory search object */
