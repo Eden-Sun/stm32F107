@@ -4,7 +4,7 @@
   * @author  MCD Application Team
   * @version V6.0.0
   * @date    16-December-2014
-  * @brief   This file contains definitions for STM3210C_EVAL's LEDs, 
+  * @brief   This file contains definitions for STM3210C_EVAL's LEDs,
   *          push-buttons and COM ports hardware resources.
   ******************************************************************************
   * @attention
@@ -38,15 +38,15 @@
 
 /** @addtogroup BSP
   * @{
-  */ 
+  */
 
 /** @addtogroup STM3210C_EVAL
   * @{
-  */ 
+  */
 
 /** @addtogroup STM3210C_EVAL_COMMON
   * @{
-  */ 
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM3210C_EVAL_H
@@ -54,7 +54,7 @@
 
 #ifdef __cplusplus
  extern "C" {
-#endif 
+#endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_hal.h"
@@ -69,7 +69,7 @@
 /**
  * @brief LED Types Definition
  */
-typedef enum 
+typedef enum
 {
   LED1 = 0,
   LED2 = 1,
@@ -86,16 +86,16 @@ typedef enum
 /**
  * @brief BUTTON Types Definition
  */
-typedef enum 
-{ 
+typedef enum
+{
   SW1            = 0,
   SW2            = 1,
   SW3            = 2,
   BUTTON_START   = 3
 } Button_TypeDef;
 
-typedef enum 
-{  
+typedef enum
+{
   BUTTON_MODE_GPIO = 0,
   BUTTON_MODE_EXTI = 1
 } ButtonMode_TypeDef;
@@ -103,8 +103,8 @@ typedef enum
 /**
  * @brief JOYSTICK Types Definition
  */
-typedef enum 
-{ 
+typedef enum
+{
   JOY_SEL   = 0,
   JOY_LEFT  = 1,
   JOY_RIGHT = 2,
@@ -114,8 +114,8 @@ typedef enum
 
 }JOYState_TypeDef;
 
-typedef enum 
-{ 
+typedef enum
+{
   JOY_MODE_GPIO = 0,
   JOY_MODE_EXTI = 1
 
@@ -124,26 +124,26 @@ typedef enum
 /**
  * @brief COM Types Definition
  */
-typedef enum 
+typedef enum
 {
   COM1 = 0,
   COM2 = 1
 } COM_TypeDef;
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup STM3210C_EVAL_Exported_Constants Exported Constants
   * @{
-  */ 
+  */
 
-/** 
-  * @brief  Define for STM3210C_EVAL board  
-  */ 
+/**
+  * @brief  Define for STM3210C_EVAL board
+  */
 #if !defined (USE_STM3210C_EVAL)
  #define USE_STM3210C_EVAL
 #endif
-  
+
 /** @addtogroup STM3210C_EVAL_LED
   * @{
   */
@@ -153,7 +153,7 @@ typedef enum
 #define LED1_GPIO_PORT                   GPIOC
 #define LED1_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOC_CLK_ENABLE()
 #define LED1_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOC_CLK_DISABLE()
-  
+
 #define LED2_PIN                         GPIO_PIN_7            /* PD.13*/
 #define LED2_GPIO_PORT                   GPIOC
 #define LED2_GPIO_CLK_ENABLE()           __HAL_RCC_GPIOC_CLK_ENABLE()
@@ -184,10 +184,10 @@ typedef enum
 /**
   * @}
   */
-  
+
 /** @addtogroup STM3210C_EVAL_BUTTON
   * @{
-  */  
+  */
 #define BUTTONn                          4
 
 
@@ -210,7 +210,7 @@ typedef enum
 #define SW2_EXTI_IRQn                         EXTI15_10_IRQn
 
 /**
- * @brief Tamper 
+ * @brief Tamper
 
  */
 #define SW3_GPIO_PIN                          GPIO_PIN_5             /* PC.13*/
@@ -221,7 +221,7 @@ typedef enum
 
 /**
  * @brief Key push-button
- */  
+ */
 #define START_BUTTON_GPIO_PIN                 GPIO_PIN_6             /* PA.06*/
 #define START_BUTTON_GPIO_PORT                GPIOA
 #define START_BUTTON_GPIO_CLK_ENABLE()        __HAL_RCC_GPIOA_CLK_ENABLE()
@@ -233,8 +233,8 @@ typedef enum
  */
 
 /**
-  * @brief IO Pins definition 
-  */ 
+  * @brief IO Pins definition
+  */
 /* Joystick */
 #define JOY_SEL_PIN                  (IO2_PIN_7) /* IO_Expander_2 */
 #define JOY_DOWN_PIN                 (IO2_PIN_6) /* IO_Expander_2 */
@@ -255,7 +255,7 @@ typedef enum
 
 /**
   * @}
-  */ 
+  */
 
 /** @addtogroup STM3210C_EVAL_COM
   * @{
@@ -264,7 +264,7 @@ typedef enum
 
 /**
  * @brief Definition for COM port1, connected to USART2
- */ 
+ */
 #define EVAL_COM1                        USART2
 #define EVAL_COM1_CLK_ENABLE()           __HAL_RCC_USART2_CLK_ENABLE()
 #define EVAL_COM1_CLK_DISABLE()          __HAL_RCC_USART2_CLK_DISABLE()
@@ -300,20 +300,20 @@ typedef enum
 
 /**
   * @}
-  */ 
+  */
 
 /** @addtogroup STM3210C_EVAL_BUS
   * @{
   */
 
-/** 
-  * @brief  IO Expander Interrupt line on EXTI  
-  */ 
+/**
+  * @brief  IO Expander Interrupt line on EXTI
+  */
 #define IOE_IT_PIN                       GPIO_PIN_14
 #define IOE_IT_GPIO_PORT                 GPIOB
 #define IOE_IT_GPIO_CLK_ENABLE()         __HAL_RCC_GPIOB_CLK_ENABLE()
 #define IOE_IT_GPIO_CLK_DISABLE()        __HAL_RCC_GPIOB_CLK_DISABLE()
-#define IOE_IT_EXTI_IRQn                 EXTI15_10_IRQn       
+#define IOE_IT_EXTI_IRQn                 EXTI15_10_IRQn
 #define IOE_IT_EXTI_IRQHANDLER           EXTI15_10_IRQHandler
 
 /* Exported constant IO ------------------------------------------------------*/
@@ -321,21 +321,21 @@ typedef enum
 #define IO2_I2C_ADDRESS                       0x88
 #define TS_I2C_ADDRESS                        0x82
 
-/*The Slave ADdress (SAD) associated to the LIS302DL is 001110xb. SDO pad can be used 
-to modify less significant bit of the device address. If SDO pad is connected to voltage 
-supply LSb is ‘1’ (address 0011101b) else if SDO pad is connected to ground LSb value is 
-‘0’ (address 0011100b).*/
+/*The Slave ADdress (SAD) associated to the LIS302DL is 001110xb. SDO pad can be used
+to modify less significant bit of the device address. If SDO pad is connected to voltage
+supply LSb is ï¿½1ï¿½ (address 0011101b) else if SDO pad is connected to ground LSb value is
+ï¿½0ï¿½ (address 0011100b).*/
 #define L1S302DL_I2C_ADDRESS                  0x38
 
 
 /*##################### ACCELEROMETER ##########################*/
 /* Read/Write command */
-#define READWRITE_CMD                     ((uint8_t)0x80) 
-/* Multiple byte read/write command */ 
+#define READWRITE_CMD                     ((uint8_t)0x80)
+/* Multiple byte read/write command */
 #define MULTIPLEBYTE_CMD                  ((uint8_t)0x40)
 
 /*##################### I2Cx ###################################*/
-/* User can use this section to tailor I2Cx instance used and associated 
+/* User can use this section to tailor I2Cx instance used and associated
    resources */
 /* Definition for I2Cx Pins */
 #define EVAL_I2Cx_SCL_PIN                       GPIO_PIN_6        /* PB.06*/
@@ -347,11 +347,11 @@ supply LSb is ‘1’ (address 0011101b) else if SDO pad is connected to ground LSb 
 #define EVAL_I2Cx                               I2C1
 #define EVAL_I2Cx_CLK_ENABLE()                  __HAL_RCC_I2C1_CLK_ENABLE()
 #define EVAL_I2Cx_SDA_GPIO_CLK_ENABLE()         __HAL_RCC_GPIOB_CLK_ENABLE()
-#define EVAL_I2Cx_SCL_GPIO_CLK_ENABLE()         __HAL_RCC_GPIOB_CLK_ENABLE() 
+#define EVAL_I2Cx_SCL_GPIO_CLK_ENABLE()         __HAL_RCC_GPIOB_CLK_ENABLE()
 
 #define EVAL_I2Cx_FORCE_RESET()                 __HAL_RCC_I2C1_FORCE_RESET()
 #define EVAL_I2Cx_RELEASE_RESET()               __HAL_RCC_I2C1_RELEASE_RESET()
-    
+
 /* Definition for I2Cx's NVIC */
 #define EVAL_I2Cx_EV_IRQn                       I2C1_EV_IRQn
 #define EVAL_I2Cx_EV_IRQHandler                 I2C1_EV_IRQHandler
@@ -368,7 +368,7 @@ supply LSb is ‘1’ (address 0011101b) else if SDO pad is connected to ground LSb 
    on accurate values, they just guarantee that the application will not remain
    stuck if the I2C communication is corrupted.
    You may modify these timeout values depending on CPU frequency and application
-   conditions (interrupts routines ...). */   
+   conditions (interrupts routines ...). */
 #define EVAL_I2Cx_TIMEOUT_MAX                   3000
 
 /*##################### SPI3 ###################################*/
@@ -389,12 +389,12 @@ supply LSb is ‘1’ (address 0011101b) else if SDO pad is connected to ground LSb 
    on accurate values, they just guarantee that the application will not remain
    stuck if the SPI communication is corrupted.
    You may modify these timeout values depending on CPU frequency and application
-   conditions (interrupts routines ...). */   
+   conditions (interrupts routines ...). */
 #define EVAL_SPIx_TIMEOUT_MAX                   1000
 
 /**
   * @}
-  */ 
+  */
 
 /** @addtogroup STM3210C_EVAL_COMPONENT
   * @{
@@ -405,9 +405,9 @@ supply LSb is ‘1’ (address 0011101b) else if SDO pad is connected to ground LSb 
 #define LCD_CS_LOW()       HAL_GPIO_WritePin(LCD_NCS_GPIO_PORT, LCD_NCS_PIN, GPIO_PIN_RESET)
 #define LCD_CS_HIGH()      HAL_GPIO_WritePin(LCD_NCS_GPIO_PORT, LCD_NCS_PIN, GPIO_PIN_SET)
 
-/** 
-  * @brief  LCD Control Interface pins 
-  */ 
+/**
+  * @brief  LCD Control Interface pins
+  */
 #define LCD_NCS_PIN                             GPIO_PIN_2        /* PB.02*/
 #define LCD_NCS_GPIO_PORT                       GPIOB
 #define LCD_NCS_GPIO_CLK_ENABLE()               __HAL_RCC_GPIOB_CLK_ENABLE()
@@ -440,20 +440,20 @@ supply LSb is ‘1’ (address 0011101b) else if SDO pad is connected to ground LSb 
   * @brief  AUDIO I2C Interface pins
   */
 #define AUDIO_I2C_ADDRESS                     0x94
-  
+
 /**
   * @}
   */
 
 /**
   * @}
-  */ 
+  */
 
 
 
 /** @addtogroup STM3210C_EVAL_Exported_Functions
   * @{
-  */ 
+  */
 uint32_t                BSP_GetVersion(void);
 void                    BSP_LED_Init(Led_TypeDef Led);
 void                    BSP_LED_On(Led_TypeDef Led);
@@ -478,19 +478,19 @@ JOYState_TypeDef        BSP_JOY_GetState(void);
 #ifdef __cplusplus
 }
 #endif
-  
+
 #endif /* __STM3210C_EVAL_H */
 
 /**
   * @}
   */
-  
+
 /**
   * @}
   */
-  
+
 /**
   * @}
   */
-  
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

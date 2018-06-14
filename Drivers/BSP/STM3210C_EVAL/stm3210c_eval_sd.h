@@ -70,8 +70,7 @@
 #define MSD_OK         0x00
 #define MSD_ERROR      0x01
 
-typedef enum
-{
+typedef enum {
 /**
   * @brief  SD reponses and error flags
   */
